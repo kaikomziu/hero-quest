@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>ゆうしゃ、はじめました。</title>
+<meta name="description" content="ドット絵のクラシックRPG。コミカルな一人旅の勇者となって魔王を倒しに行こう。ブラウザだけで遊べる無料RPG。">
+<link rel="canonical" href="https://kaikomziu.github.io/hero-quest/">
+<meta property="og:title" content="ゆうしゃ、はじめました。">
+<meta property="og:description" content="ドット絵のクラシックRPG。コミカルな一人旅の勇者となって魔王を倒しに行こう。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kaikomziu.github.io/hero-quest/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ゆうしゃ、はじめました。">
+<meta name="twitter:description" content="ドット絵のクラシックRPG。コミカルな一人旅の勇者となって魔王を倒しに行こう。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div id="gameFrame">
+    <canvas id="gameCanvas"></canvas>
+    <div id="overlayRoot"></div>
+    <div id="dpad" class="touchlayer">
+      <button id="btnUp" class="dbtn dup">▲</button>
+      <button id="btnLeft" class="dbtn dleft">◀</button>
+      <button id="btnRight" class="dbtn dright">▶</button>
+      <button id="btnDown" class="dbtn ddown">▼</button>
+    </div>
+    <div id="actionButtons" class="touchlayer">
+      <button id="btnCancel" class="abtn">✕</button>
+      <button id="btnOk" class="abtn">◯</button>
+    </div>
+  </div>
+</div>
+<script src="js/pixelart.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/mapgen.js"></script>
+<script src="js/data.js"></script>
+<script src="js/save.js"></script>
+<script src="js/player.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/world.js"></script>
+<script src="js/ranking.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
