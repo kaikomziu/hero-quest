@@ -333,10 +333,11 @@
   function fillTile(color){ const r=[]; for(let i=0;i<16;i++) r.push('a'.repeat(16)); return {w:16,h:16,legend:{'a':color === 'grass'?'T1':'T1'},rows:r}; }
 
   function solidTile(name, hexBase, hexAlt){
+    // 4x4ブロック市松模様(タイル境界をまたいでも綺麗に連続する、斜めノイズを避けるため)
     const rows=[];
     for(let y=0;y<16;y++){
       let row='';
-      for(let x=0;x<16;x++){ row += ((x+y)%7===0)?'b':'a'; }
+      for(let x=0;x<16;x++){ row += ((Math.floor(x/4)+Math.floor(y/4))%2===0) ? 'a':'b'; }
       rows.push(row);
     }
     return {name, w:16,h:16,legend:{'a':'T1','b':'T2'},rows,palette:{T1:hexBase,T2:hexAlt}};
@@ -345,7 +346,7 @@
   tiles.grass = solidTile('tile_grass','#3d9c40','#46ab48');
   tiles.path  = solidTile('tile_path','#c9a86a','#d3b578');
   tiles.water = (() => {
-    const rows=[]; for(let y=0;y<16;y++){ let row=''; for(let x=0;x<16;x++){ row += ((x+y*2)%9<2)?'b':'a'; } rows.push(row); }
+    const rows=[]; for(let y=0;y<16;y++){ let row=''; for(let x=0;x<16;x++){ row += (y%4===0||y%4===1)?'b':'a'; } rows.push(row); }
     return {name:'tile_water', w:16,h:16,legend:{'a':'T1','b':'T2'},rows,palette:{T1:'#2a6fd6',T2:'#3f8ce8'}};
   })();
   tiles.floor = solidTile('tile_floor','#6b5636','#77613e');

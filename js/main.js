@@ -391,8 +391,14 @@
       }
       return;
     }
-    if(pm.screen==='status' || pm.screen==='skills' || pm.screen==='bestiary'){
+    if(pm.screen==='status' || pm.screen==='skills'){
       if(Input.justPressed('cancel') || Input.justPressed('ok')){ pm.screen='main'; GameAudio.sfx.cancel(); }
+      return;
+    }
+    if(pm.screen==='bestiary'){
+      if(Input.justPressed('cancel') || Input.justPressed('ok')){ pm.screen='main'; GameAudio.sfx.cancel(); return; }
+      if(Input.justPressed('down')) pm.bestiaryScroll = (pm.bestiaryScroll||0)+1;
+      if(Input.justPressed('up')) pm.bestiaryScroll = Math.max(0,(pm.bestiaryScroll||0)-1);
       return;
     }
     if(pm.screen==='equip'){
@@ -507,15 +513,19 @@
   }
   function drawSkillsPanel(){
     const skills = Player.knownSkills(Game.state);
-    const w=LOGICAL_W-40,h=Math.min(300,50+skills.length*34),x=20,y=30;
+    const safeBottom = LOGICAL_H - UI.CONTROL_RESERVE;
+    const x=20, y=30, w=LOGICAL_W-40, h=safeBottom-y;
+    const rowH = 30;
     UI.drawWindow(ctx,x,y,w,h);
-    ctx.save(); ctx.fillStyle=UI.COL.text; ctx.font='12px sans-serif'; ctx.textBaseline='top';
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x,y,w,h-18); ctx.clip();
+    ctx.fillStyle=UI.COL.text; ctx.font='12px sans-serif'; ctx.textBaseline='top';
     skills.forEach((s,i)=>{
       ctx.fillStyle = UI.COL.accent;
-      ctx.fillText(s.name+' (MP'+s.mp+')', x+14, y+14+i*34);
+      ctx.fillText(s.name+' (MP'+s.mp+')', x+14, y+12+i*rowH);
       ctx.fillStyle = UI.COL.text;
       ctx.font='11px sans-serif';
-      ctx.fillText(s.desc, x+14, y+30+i*34);
+      ctx.fillText(s.desc, x+14, y+27+i*rowH);
       ctx.font='12px sans-serif';
     });
     ctx.restore();
@@ -525,22 +535,37 @@
   }
   function drawBestiaryPanel(){
     const prog = Player.bestiaryProgress(Game.state);
-    const w=LOGICAL_W-40,h=260,x=20,y=40;
+    const safeBottom = LOGICAL_H - UI.CONTROL_RESERVE;
+    const x=20, y=30, w=LOGICAL_W-40, h=safeBottom-y;
     UI.drawWindow(ctx,x,y,w,h,{accent:true});
     ctx.save(); ctx.fillStyle=UI.COL.text; ctx.font='13px sans-serif'; ctx.textBaseline='top';
     ctx.fillText('モンスターずかん '+prog.seen+'/'+prog.total, x+14, y+12);
-    ctx.font='11px sans-serif';
-    let yy = y+36;
-    Object.values(GD.MONSTERS).forEach(m=>{
+    ctx.restore();
+    const listTop = y+34, listBottom = y+h-18;
+    const rowH = 15;
+    const maxRows = Math.floor((listBottom-listTop)/rowH);
+    const monsters = Object.values(GD.MONSTERS);
+    const maxScroll = Math.max(0, monsters.length-maxRows);
+    Game.pauseMenu.bestiaryScroll = Math.min(Math.max(0, Game.pauseMenu.bestiaryScroll||0), maxScroll);
+    const scroll = Game.pauseMenu.bestiaryScroll;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x, listTop-12, w, listBottom-listTop+12); ctx.clip();
+    ctx.font='11px sans-serif'; ctx.textBaseline='top';
+    for(let i=0;i<maxRows && scroll+i<monsters.length;i++){
+      const m = monsters[scroll+i];
       const known = Game.state.bestiary.indexOf(m.id)>=0;
       ctx.fillStyle = known ? UI.COL.text : UI.COL.dim;
-      ctx.fillText(known ? m.name : '？？？？？', x+14, yy);
-      yy += 15;
-      if(yy>y+h-16) return;
-    });
+      ctx.fillText(known ? m.name : '？？？？？', x+14, listTop+i*rowH);
+    }
     ctx.restore();
+    if(maxScroll>0){
+      ctx.save(); ctx.fillStyle=UI.COL.dim; ctx.textAlign='center'; ctx.font='11px sans-serif';
+      if(scroll>0) ctx.fillText('▲', x+w-16, listTop-12);
+      if(scroll<maxScroll) ctx.fillText('▼', x+w-16, listBottom-12);
+      ctx.restore();
+    }
     ctx.save(); ctx.fillStyle=UI.COL.dim; ctx.font='11px sans-serif'; ctx.textAlign='center';
-    ctx.fillText('✕ボタンで もどる', LOGICAL_W/2, y+h-12);
+    ctx.fillText('✕ボタンで もどる', LOGICAL_W/2, y+h-14);
     ctx.restore();
   }
 
@@ -598,8 +623,9 @@
     ctx.fillText('しょとくGold: '+Game.state.gold+'G', 24, 18);
     ctx.restore();
     const sh = Game.shop;
-    const h = Math.min(280, sh.menu.items.length*22+24);
-    UI.drawMenu(ctx, 16, 34, LOGICAL_W-32, h, sh.menu, {rowH:22});
+    const shopTop = 34;
+    const h = Math.min(LOGICAL_H-UI.CONTROL_RESERVE-shopTop, sh.menu.items.length*22+24);
+    UI.drawMenu(ctx, 16, shopTop, LOGICAL_W-32, h, sh.menu, {rowH:22});
     if(sh.msg) UI.drawDialogueBox(ctx, LOGICAL_W, LOGICAL_H, sh.msg, null);
   }
 

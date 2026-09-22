@@ -346,13 +346,20 @@
   };
 
   Battle.prototype.draw = function(ctx, W, H){
+    const safeBottom = H - UI.CONTROL_RESERVE;
+    const menuH = 78;
+    const menuY = safeBottom - menuH;
+    const statusH = 50;
+    const bottomY = menuY - 6 - statusH;
+    const enemyAreaBottom = bottomY - 8;
+
     ctx.fillStyle = '#0a0e22';
     ctx.fillRect(0,0,W,H);
-    const grad = ctx.createLinearGradient(0,0,0,H*0.6);
+    const grad = ctx.createLinearGradient(0,0,0,enemyAreaBottom);
     grad.addColorStop(0,'#26305c');
     grad.addColorStop(1,'#141a38');
     ctx.fillStyle = grad;
-    ctx.fillRect(0,0,W,H*0.55);
+    ctx.fillRect(0,0,W,enemyAreaBottom);
 
     const living = this.enemies;
     const n = living.length;
@@ -360,9 +367,9 @@
     living.forEach((e,i)=>{
       if(e.curHp<=0) return;
       const shape = PX.monsterShapes[e.shape];
-      const size = e.isBoss ? 88 : 56;
+      const size = e.isBoss ? 72 : 48;
       let cx = spacing*(i+1) - size/2;
-      let cy = H*0.28 - size/2;
+      let cy = enemyAreaBottom - 34 - size;
       if(this.shakeTimer>0 && i===0) cx += (Math.random()-0.5)*6;
       PX.drawSprite(ctx, shape, cx, cy, size, {palette:e.palette});
       ctx.save();
@@ -375,25 +382,20 @@
       ctx.restore();
     });
 
-    const bottomY = H*0.56;
     const pStats = this.playerStats();
-    const statusH = 54;
     UI.drawWindow(ctx, 8, bottomY, W-16, statusH);
     ctx.save();
     ctx.fillStyle = UI.COL.text;
     ctx.font = '12px sans-serif';
     ctx.textBaseline = 'top';
-    ctx.fillText(this.state.name+' Lv'+Player.level(this.state), 18, bottomY+8);
-    ctx.fillText('HP', 18, bottomY+26);
-    UI.drawBar(ctx, 44, bottomY+27, 90, 9, this.state.hp/pStats.hp, UI.COL.hp, UI.COL.hpBg);
-    ctx.fillText(this.state.hp+'/'+pStats.hp, 138, bottomY+26);
-    ctx.fillText('MP', 18, bottomY+40);
-    UI.drawBar(ctx, 44, bottomY+41, 90, 9, this.state.mp/Math.max(1,pStats.mp), UI.COL.mp, UI.COL.mpBg);
-    ctx.fillText(this.state.mp+'/'+pStats.mp, 138, bottomY+40);
+    ctx.fillText(this.state.name+' Lv'+Player.level(this.state), 18, bottomY+6);
+    ctx.fillText('HP', 18, bottomY+22);
+    UI.drawBar(ctx, 44, bottomY+23, 90, 8, this.state.hp/pStats.hp, UI.COL.hp, UI.COL.hpBg);
+    ctx.fillText(this.state.hp+'/'+pStats.hp, 138, bottomY+22);
+    ctx.fillText('MP', 18, bottomY+35);
+    UI.drawBar(ctx, 44, bottomY+36, 90, 8, this.state.mp/Math.max(1,pStats.mp), UI.COL.mp, UI.COL.mpBg);
+    ctx.fillText(this.state.mp+'/'+pStats.mp, 138, bottomY+35);
     ctx.restore();
-
-    const menuY = bottomY + statusH + 6;
-    const menuH = H - menuY - 6;
     if(this.phase==='command'){
       UI.drawMenu(ctx, 8, menuY, W-16, menuH, this.commandMenu, {rowH:26});
     } else if(this.phase==='skillList' || this.phase==='itemList'){
@@ -401,7 +403,7 @@
     } else if(this.phase==='targetSelect'){
       UI.drawMenu(ctx, 8, menuY, W-16, menuH, this.targetMenu, {rowH:22});
     } else if(this.phase==='message' || this.phase==='victoryProcessing'){
-      if(this.dialogue) UI.drawDialogueBox(ctx, W, H, this.dialogue, null);
+      if(this.dialogue) UI.drawDialogueBoxAt(ctx, 8, menuY, W-16, menuH, this.dialogue, null);
     } else if(this.phase==='victory'){
       UI.drawWindow(ctx, 8, menuY, W-16, menuH, {accent:true});
       ctx.save();

@@ -87,9 +87,14 @@
     return true;
   };
 
+  const CONTROL_RESERVE = 112; // 画面下部の十字キー・ボタン領域と重ならないための余白
+
   function drawDialogueBox(ctx, W, H, dialogue, nameLabel){
     const boxH = 92;
-    const x = 10, y = H-boxH-14, w = W-20, h = boxH;
+    drawDialogueBoxAt(ctx, 10, H-CONTROL_RESERVE-boxH, W-20, boxH, dialogue, nameLabel);
+  }
+
+  function drawDialogueBoxAt(ctx, x, y, w, h, dialogue, nameLabel){
     drawWindow(ctx, x, y, w, h);
     ctx.save();
     ctx.fillStyle = COL.text;
@@ -155,10 +160,25 @@
     ctx.textBaseline = 'top';
     const rowH = opts.rowH || 22;
     const padX = 14, padY = 12;
-    menu.items.forEach((item, i)=>{
-      const row = menu.cols>1 ? Math.floor(i/menu.cols) : i;
-      const col = menu.cols>1 ? i%menu.cols : 0;
-      const colW = (w-padX*2)/menu.cols;
+    const cols = menu.cols || 1;
+    const totalRows = Math.ceil(menu.items.length/cols);
+    const maxRows = Math.max(1, Math.floor((h-padY*2)/rowH));
+    const cursorRow = Math.floor(menu.cursor/cols);
+    let scrollRow = 0;
+    if(totalRows>maxRows){
+      scrollRow = Math.min(Math.max(0, cursorRow-Math.floor(maxRows/2)), totalRows-maxRows);
+    }
+    const firstIdx = scrollRow*cols;
+    const lastIdx = Math.min(menu.items.length, firstIdx+maxRows*cols);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.clip();
+    for(let i=firstIdx;i<lastIdx;i++){
+      const item = menu.items[i];
+      const row = (cols>1 ? Math.floor(i/cols) : i) - scrollRow;
+      const col = cols>1 ? i%cols : 0;
+      const colW = (w-padX*2)/cols;
       const ix = x+padX+col*colW;
       const iy = y+padY+row*rowH;
       if(i===menu.cursor){
@@ -174,9 +194,17 @@
         ctx.fillText(item.rightLabel, ix+colW-10, iy);
         ctx.textAlign = 'left';
       }
-    });
+    }
+    ctx.restore();
+    if(totalRows>maxRows){
+      ctx.fillStyle = COL.dim;
+      ctx.textAlign = 'center';
+      if(scrollRow>0) ctx.fillText('▲', x+w-14, y+4);
+      if(scrollRow+maxRows<totalRows) ctx.fillText('▼', x+w-14, y+h-16);
+      ctx.textAlign = 'left';
+    }
     ctx.restore();
   }
 
-  global.UI = { COL, drawWindow, wrapByWidth, drawBar, Dialogue, drawDialogueBox, Menu, drawMenu };
+  global.UI = { COL, CONTROL_RESERVE, drawWindow, wrapByWidth, drawBar, Dialogue, drawDialogueBox, drawDialogueBoxAt, Menu, drawMenu };
 })(window);
